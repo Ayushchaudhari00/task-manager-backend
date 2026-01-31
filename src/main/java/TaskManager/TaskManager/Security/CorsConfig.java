@@ -21,7 +21,7 @@ public class CorsConfig {
 
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "https://your-app.netlify.app"
+                "https://task-manager-backend-0qvl.onrender.com"
         ));
 
         config.setAllowedMethods(List.of(
