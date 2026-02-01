@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -22,7 +23,10 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody UserRequestDto request) {
         try {
+            System.out.println("Register request received: " + request.getEmail());
+            
             UserResponseDto response = authService.register(request);
+            
             return ResponseEntity.status(HttpStatus.CREATED).body(
                 Map.of(
                     "success", true,
@@ -31,6 +35,10 @@ public class AuthController {
                 )
             );
         } catch (Exception e) {
+            // Log the error
+            System.out.println("Registration error: " + e.getMessage());
+            e.printStackTrace();
+            
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 Map.of(
                     "success", false,
@@ -44,6 +52,7 @@ public class AuthController {
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
             String token = authService.login(request.getEmail(), request.getPassword());
+            
             return ResponseEntity.ok().body(
                 Map.of(
                     "success", true,
@@ -55,24 +64,9 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 Map.of(
                     "success", false,
-                    "message", e.getMessage()
+                    "message", "Invalid email or password"
                 )
             );
         }
-    }
-
-    // ADD THIS FOR DEBUGGING - Simple endpoint that doesn't use DB
-    @PostMapping("/test-register")
-    public ResponseEntity<?> testRegister(@RequestBody Map<String, String> request) {
-        System.out.println("Test register called with: " + request);
-        
-        return ResponseEntity.ok().body(
-            Map.of(
-                "success", true,
-                "message", "Test endpoint works!",
-                "received", request,
-                "timestamp", new java.util.Date()
-            )
-        );
     }
 }
