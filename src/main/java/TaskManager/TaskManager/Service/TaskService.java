@@ -1,47 +1,55 @@
-package TaskManager.TaskManager.Service;
+package TaskManager.TaskManager.Controller;
 
+import TaskManager.TaskManager.Service.TaskService;
 import TaskManager.TaskManager.entity.Task;
-import TaskManager.TaskManager.entity.User;
-import TaskManager.TaskManager.repository.TaskRepo;
-import TaskManager.TaskManager.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Service
+@RestController
+@RequestMapping("/api/tasks")
 @RequiredArgsConstructor
-public class TaskService {
+public class TaskController {
 
-    private final TaskRepo taskRepository;
-    private final UserRepo userRepository;
+    private final TaskService taskService;
 
-    public List<Task> getTasksByUserEmail(String email) {
-        return taskRepository.findByUserEmail(email);
+    // ✅ CREATE TASK
+    @PostMapping
+    public Task createTask(
+            @RequestBody Task task,
+            Authentication authentication
+    ) {
+        String email = authentication.getName(); // extracted from JWT
+        return taskService.createTask(task, email);
     }
 
-    public Task createTask(Task task, String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        task.setUser(user);
-        return taskRepository.save(task);
+    // ✅ GET ALL TASKS (LOGGED-IN USER ONLY)
+    @GetMapping
+    public List<Task> getMyTasks(Authentication authentication) {
+        String email = authentication.getName();
+        return taskService.getTasksByUser(email);
     }
 
-    public Task updateTask(Long id, Task updatedTask) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        task.setTitle(updatedTask.getTitle());
-        task.setDescription(updatedTask.getDescription());
-        task.setStatus(updatedTask.getStatus());
-        task.setPriority(updatedTask.getPriority());
-        task.setDueDate(updatedTask.getDueDate());
-
-        return taskRepository.save(task);
+    // ✅ UPDATE TASK
+    @PutMapping("/{id}")
+    public Task updateTask(
+            @PathVariable Long id,
+            @RequestBody Task updatedTask,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        return taskService.updateTask(id, updatedTask, email);
     }
 
-    public void deleteTask(Long id) {
-        taskRepository.deleteById(id);
+    // ✅ DELETE TASK
+    @DeleteMapping("/{id}")
+    public void deleteTask(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        taskService.deleteTask(id, email);
     }
 }
