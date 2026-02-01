@@ -1,10 +1,8 @@
 package TaskManager.TaskManager.Security;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,17 +21,25 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final CorsConfigurationSource corsConfigurationSource;
 
-  @Bean
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        .csrf(csrf -> csrf.disable())
-        .cors(cors -> cors.disable())
-        .authorizeHttpRequests(auth -> auth
-            .anyRequest().permitAll()
-        );
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable()) // Keep this for API testing
+            .cors(cors -> cors.configurationSource(corsConfigurationSource)) // USE your CORS config
+            .authorizeHttpRequests(auth -> auth
+                // Allow public access to auth endpoints
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/test/**").permitAll() // Add for testing
+                .requestMatchers("/error").permitAll() // Allow error endpoint
+                .anyRequest().authenticated() // Protect everything else
+            )
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-    return http.build();
-}
+        return http.build();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
