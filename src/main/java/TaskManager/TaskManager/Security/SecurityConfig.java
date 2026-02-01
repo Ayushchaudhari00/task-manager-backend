@@ -23,37 +23,17 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final CorsConfigurationSource corsConfigurationSource;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  @Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable())
+        .cors(cors -> cors.disable())
+        .authorizeHttpRequests(auth -> auth
+            .anyRequest().permitAll()
+        );
 
-        http
-            .csrf(csrf -> csrf.disable())
-
-            // ✅ THIS LINE CONNECTS CORS WITH SECURITY
-            .cors(cors -> cors.configurationSource(corsConfigurationSource))
-
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-
-            .authorizeHttpRequests(auth -> auth
-                // ✅ VERY IMPORTANT
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                // ✅ PUBLIC AUTH ENDPOINTS
-                .requestMatchers("/api/auth/**").permitAll()
-
-                // 🔐 EVERYTHING ELSE
-                .anyRequest().authenticated()
-            )
-
-            .addFilterBefore(
-                jwtAuthFilter,
-                UsernamePasswordAuthenticationFilter.class
-            );
-
-        return http.build();
-    }
+    return http.build();
+}
 
     @Bean
     public PasswordEncoder passwordEncoder() {
