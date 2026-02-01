@@ -1,53 +1,35 @@
 package TaskManager.TaskManager.Service;
 
-import TaskManager.TaskManager.Dto.UserRequestDto;
-import TaskManager.TaskManager.Dto.UserResponseDto;
 import TaskManager.TaskManager.Security.JwtUtil;
 import TaskManager.TaskManager.entity.User;
 import TaskManager.TaskManager.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder; // ADD THIS IMPORT
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepo userRepository;
-    private final PasswordEncoder passwordEncoder; // Now this will work
+    private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    public UserResponseDto register(UserRequestDto requestDto) {
-        // Check if email already exists
-        if (userRepository.findByEmail(requestDto.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already registered");
-        }
-
-        // Create user from DTO
-        User user = User.builder()
-                .name(requestDto.getName())
-                .email(requestDto.getEmail())
-                .password(passwordEncoder.encode(requestDto.getPassword()))
-                .role("USER")
-                .build();
-
-        // Save user
-        User savedUser = userRepository.save(user);
-
-        // Return response DTO
-        return UserResponseDto.builder()
-                .id(savedUser.getId())
-                .name(savedUser.getName())
-                .email(savedUser.getEmail())
-                .role(savedUser.getRole())
-                .build();
-    }
-
-    // Keep original for backward compatibility
-    public User register(User user) {
+    public Map<String, Object> register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole("USER");
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        String token = jwtUtil.generateToken(savedUser.getEmail());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("name", savedUser.getName());
+        response.put("email", savedUser.getEmail());
+        return response;
     }
 
     public String login(String email, String password) {
