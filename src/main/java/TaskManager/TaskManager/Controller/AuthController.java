@@ -15,18 +15,13 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // ✅ REGISTER — now returns { token, name, email }
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody User user) {
         return authService.register(user);
     }
 
-    // ✅ LOGIN — unchanged, returns plain JWT token string
     @PostMapping("/login")
     public String login(@RequestBody LoginRequest request) {
-        return authService.login(
-                request.getEmail(),
-                request.getPassword()
-        );
+        return authService.login(request.getEmail(), request.getPassword());
     }
 }
