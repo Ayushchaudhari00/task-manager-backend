@@ -1,72 +1,63 @@
-package TaskManager.TaskManager.Controller;
+package TaskManager.TaskManager.Service;
 
-import TaskManager.TaskManager.Dto.LoginRequest;
 import TaskManager.TaskManager.Dto.UserRequestDto;
 import TaskManager.TaskManager.Dto.UserResponseDto;
-import TaskManager.TaskManager.Service.AuthService;
-import jakarta.validation.Valid;
+import TaskManager.TaskManager.Security.JwtUtil;
+import TaskManager.TaskManager.entity.User;
+import TaskManager.TaskManager.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.password.PasswordEncoder; // ADD THIS IMPORT
+import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-
-@RestController
-@RequestMapping("/api/auth")
+@Service
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthService {
 
-    private final AuthService authService;
+    private final UserRepo userRepository;
+    private final PasswordEncoder passwordEncoder; // Now this will work
+    private final JwtUtil jwtUtil;
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody UserRequestDto request) {
-        try {
-            System.out.println("Register request received: " + request.getEmail());
-            
-            UserResponseDto response = authService.register(request);
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(
-                Map.of(
-                    "success", true,
-                    "message", "User registered successfully",
-                    "user", response
-                )
-            );
-        } catch (Exception e) {
-            // Log the error
-            System.out.println("Registration error: " + e.getMessage());
-            e.printStackTrace();
-            
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                Map.of(
-                    "success", false,
-                    "message", e.getMessage()
-                )
-            );
+    public UserResponseDto register(UserRequestDto requestDto) {
+        // Check if email already exists
+        if (userRepository.findByEmail(requestDto.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already registered");
         }
+
+        // Create user from DTO
+        User user = User.builder()
+                .name(requestDto.getName())
+                .email(requestDto.getEmail())
+                .password(passwordEncoder.encode(requestDto.getPassword()))
+                .role("USER")
+                .build();
+
+        // Save user
+        User savedUser = userRepository.save(user);
+
+        // Return response DTO
+        return UserResponseDto.builder()
+                .id(savedUser.getId())
+                .name(savedUser.getName())
+                .email(savedUser.getEmail())
+                .role(savedUser.getRole())
+                .build();
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        try {
-            String token = authService.login(request.getEmail(), request.getPassword());
-            
-            return ResponseEntity.ok().body(
-                Map.of(
-                    "success", true,
-                    "token", token,
-                    "message", "Login successful"
-                )
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                Map.of(
-                    "success", false,
-                    "message", "Invalid email or password"
-                )
-            );
+    // Keep original for backward compatibility
+    public User register(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole("USER");
+        return userRepository.save(user);
+    }
+
+    public String login(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
         }
+
+        return jwtUtil.generateToken(user.getEmail());
     }
 }
