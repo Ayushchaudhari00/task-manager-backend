@@ -13,41 +13,27 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TaskService {
 
-    private final TaskRepo taskRepo;
-    private final UserRepo userRepo;
+    private final TaskRepo taskRepository;
+    private final UserRepo userRepository;
 
-    // ✅ CREATE TASK (CRITICAL FIX: SET USER)
+    // GET /api/tasks
+    public List<Task> getTasksByUserEmail(String email) {
+        return taskRepository.findByUserEmail(email);
+    }
+
+    // POST /api/tasks
     public Task createTask(Task task, String email) {
-
-        User user = userRepo.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        task.setUser(user); // 🔥 REQUIRED (THIS WAS YOUR BUG)
-
-        return taskRepo.save(task);
+        task.setUser(user);
+        return taskRepository.save(task);
     }
 
-    // ✅ GET TASKS FOR LOGGED-IN USER
-    public List<Task> getTasksByUser(String email) {
-
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return taskRepo.findByUser(user);
-    }
-
-    // ✅ UPDATE TASK (ONLY OWNER CAN UPDATE)
-    public Task updateTask(Long id, Task updatedTask, String email) {
-
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Task task = taskRepo.findById(id)
+    // PUT /api/tasks/{id}
+    public Task updateTask(Long id, Task updatedTask) {
+        Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        if (!task.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Unauthorized");
-        }
 
         task.setTitle(updatedTask.getTitle());
         task.setDescription(updatedTask.getDescription());
@@ -55,22 +41,14 @@ public class TaskService {
         task.setPriority(updatedTask.getPriority());
         task.setDueDate(updatedTask.getDueDate());
 
-        return taskRepo.save(task);
+        return taskRepository.save(task);
     }
 
-    // ✅ DELETE TASK (ONLY OWNER)
-    public void deleteTask(Long id, String email) {
-
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Task task = taskRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        if (!task.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Unauthorized");
+    // DELETE /api/tasks/{id}
+    public void deleteTask(Long id) {
+        if (!taskRepository.existsById(id)) {
+            throw new RuntimeException("Task not found");
         }
-
-        taskRepo.delete(task);
+        taskRepository.deleteById(id);
     }
 }
