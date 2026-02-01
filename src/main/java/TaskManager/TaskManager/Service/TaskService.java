@@ -16,12 +16,12 @@ public class TaskService {
     private final TaskRepo taskRepository;
     private final UserRepo userRepository;
 
-    // GET /api/tasks
-    public List<Task> getTasksByUserEmail(String email) {
+    // ✅ FIXED: Changed method name from getTasksByUserEmail to getTasksByUser
+    public List<Task> getTasksByUser(String email) {
         return taskRepository.findByUserEmail(email);
     }
 
-    // POST /api/tasks
+    // ✅ Already correct
     public Task createTask(Task task, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -30,10 +30,15 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    // PUT /api/tasks/{id}
-    public Task updateTask(Long id, Task updatedTask) {
+    // ✅ FIXED: Added email parameter for authorization check
+    public Task updateTask(Long id, Task updatedTask, String email) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+        
+        // ✅ ADD THIS: Check if task belongs to the user
+        if (!task.getUser().getEmail().equals(email)) {
+            throw new RuntimeException("Unauthorized to update this task");
+        }
 
         task.setTitle(updatedTask.getTitle());
         task.setDescription(updatedTask.getDescription());
@@ -44,11 +49,16 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    // DELETE /api/tasks/{id}
-    public void deleteTask(Long id) {
-        if (!taskRepository.existsById(id)) {
-            throw new RuntimeException("Task not found");
+    // ✅ FIXED: Added email parameter for authorization check
+    public void deleteTask(Long id, String email) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        
+        // ✅ ADD THIS: Check if task belongs to the user
+        if (!task.getUser().getEmail().equals(email)) {
+            throw new RuntimeException("Unauthorized to delete this task");
         }
+        
         taskRepository.deleteById(id);
     }
 }
