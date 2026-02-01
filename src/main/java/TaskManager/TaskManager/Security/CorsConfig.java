@@ -10,24 +10,24 @@ import java.util.List; // Only need this import
 @Configuration
 public class CorsConfig {
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        
-        // Using List.of() - cleaner syntax
-        config.setAllowedOrigins(List.of(
-            "http://localhost:5173",
-            "https://task-manager-frontend.onrender.com"
-        ));
-        
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(false);
-        config.setMaxAge(3600L);
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        
-        return source;
-    }
+   @Bean
+public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration config = new CorsConfiguration();
+    
+    // ⚠️ MUST include localhost:5173
+    config.setAllowedOrigins(Arrays.asList(
+        "http://localhost:5173",                    // React dev server
+        "https://task-manager-frontend.onrender.com" // Your deployed frontend
+    ));
+    
+    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    config.setAllowedHeaders(Arrays.asList("*"));
+    config.setAllowCredentials(false); // Set to false for now
+    config.setMaxAge(3600L);
+    
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
+    
+    return source;
+}
 }
