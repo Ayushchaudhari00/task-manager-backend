@@ -14,13 +14,10 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // ✅ REGISTER (Public)
     @PostMapping("/register")
     public User register(@RequestBody User user) {
         return authService.register(user);
     }
-
-    // ✅ LOGIN (Public) → returns JWT token
 
     @PostMapping("/login")
     public String login(@RequestBody LoginRequest request) {
