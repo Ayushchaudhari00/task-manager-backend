@@ -24,18 +24,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Keep this for API testing
-            .cors(cors -> cors.configurationSource(corsConfigurationSource)) // USE your CORS config
-            .authorizeHttpRequests(auth -> auth
-                // Allow public access to auth endpoints
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/test/**").permitAll() // Add for testing
-                .requestMatchers("/error").permitAll() // Allow error endpoint
-                .anyRequest().authenticated() // Protect everything else
-            )
+            // Disable CSRF for APIs (stateless)
+            .csrf(csrf -> csrf.disable())
+            
+            // ✅ FIXED: Enable CORS with your configuration
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
+            
+            // Session management (stateless for JWT)
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
+            
+            // Authorization rules
+            .authorizeHttpRequests(auth -> auth
+                // Public endpoints (no authentication needed)
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/test/**").permitAll()
+                .requestMatchers("/error").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // If using Swagger
+                
+                // Protected endpoints (require authentication)
+                .anyRequest().authenticated()
+            )
+            
+            // Add JWT filter before authentication
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
