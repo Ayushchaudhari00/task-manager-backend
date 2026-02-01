@@ -21,20 +21,18 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final CorsConfigurationSource corsConfigurationSource;
 
-  @Bean
+ @Bean
 public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .csrf(csrf -> csrf.disable())
         .cors(cors -> cors.configurationSource(corsConfigurationSource))
         .authorizeHttpRequests(auth -> auth
-            // Allow public endpoints
-            .requestMatchers("/").permitAll()               // Root endpoint
-            .requestMatchers("/health").permitAll()         // Health check
-            .requestMatchers("/api/auth/**").permitAll()    // Auth endpoints
-            .requestMatchers("/api/test/**").permitAll()    // Test endpoints
-            .requestMatchers("/error").permitAll()          // Error pages
+            // Allow public endpoints (no authentication needed)
+            .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers("/api/test/**").permitAll()
+            .requestMatchers("/error").permitAll()
             
-            // All other endpoints require authentication
+            // All other endpoints (including /api/tasks) require authentication
             .anyRequest().authenticated()
         )
         .sessionManagement(session -> session
