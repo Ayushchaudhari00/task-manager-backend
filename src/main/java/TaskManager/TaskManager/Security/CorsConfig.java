@@ -15,9 +15,10 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(
+        // ✅ Allow all HTTPS origins safely
+        config.setAllowedOriginPatterns(List.of(
             "http://localhost:5173",
-            "https://task-manager-frontend.onrender.com"
+            "https://*.onrender.com"
         ));
 
         config.setAllowedMethods(List.of(
