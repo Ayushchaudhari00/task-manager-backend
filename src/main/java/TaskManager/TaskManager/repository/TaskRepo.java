@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TaskRepo extends JpaRepository<Task,Long> {
-    List<Task> findByUserEmail(String email);
+public interface TaskRepo extends JpaRepository<Task, Long> {
+    List<Task> findByUserId(Long userId); 
+    List<Task> findByUserEmail(String email); 
 }
