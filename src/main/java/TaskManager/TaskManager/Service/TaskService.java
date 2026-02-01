@@ -17,7 +17,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    // ✅ REGISTER — now returns token + user info in one response
     public Map<String, Object> register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole("USER");
@@ -25,7 +24,6 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(savedUser.getEmail());
 
-        // Return everything the frontend needs in one shot
         return Map.of(
             "token", token,
             "name", savedUser.getName(),
@@ -33,7 +31,6 @@ public class AuthService {
         );
     }
 
-    // ✅ LOGIN — unchanged, still returns plain token string
     public String login(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
