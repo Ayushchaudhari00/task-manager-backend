@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource; // ADD THIS IMPORT
 
 @Configuration
 @EnableWebSecurity
@@ -19,35 +20,22 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
-    private final CorsConfigurationSource corsConfigurationSource;
+    private final CorsConfigurationSource corsConfigurationSource; // Now this will work
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF for APIs (stateless)
             .csrf(csrf -> csrf.disable())
-            
-            // ✅ FIXED: Enable CORS with your configuration
-            .cors(cors -> cors.configurationSource(corsConfigurationSource))
-            
-            // Session management (stateless for JWT)
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            
-            // Authorization rules
+            .cors(cors -> cors.configurationSource(corsConfigurationSource)) // Fixed
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints (no authentication needed)
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/test/**").permitAll()
                 .requestMatchers("/error").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // If using Swagger
-                
-                // Protected endpoints (require authentication)
                 .anyRequest().authenticated()
             )
-            
-            // Add JWT filter before authentication
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
