@@ -17,7 +17,7 @@ public class CorsConfig {
 
         config.setAllowedOrigins(List.of(
             "http://localhost:5173",
-            "https://task-manager-frontend.onrender.com" // adjust if needed
+            "https://task-manager-frontend.onrender.com"
         ));
 
         config.setAllowedMethods(List.of(
@@ -25,6 +25,7 @@ public class CorsConfig {
         ));
 
         config.setAllowedHeaders(List.of("*"));
+
         config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source =
