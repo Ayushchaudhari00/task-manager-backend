@@ -9,7 +9,8 @@ import java.util.Arrays;
 
 @Configuration
 public class CorsConfig {
-   @Bean
+
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         
@@ -27,5 +28,4 @@ public class CorsConfig {
         
         return source;
     }
-
 }
