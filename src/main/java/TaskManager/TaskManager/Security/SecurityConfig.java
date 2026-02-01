@@ -15,7 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -26,11 +25,13 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
-     @Bean
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
             .csrf(csrf -> csrf.disable())
+
+            // ✅ ENABLE CORS
             .cors(cors -> {})
 
             .sessionManagement(session ->
@@ -38,8 +39,13 @@ public class SecurityConfig {
             )
 
             .authorizeHttpRequests(auth -> auth
+                // ✅ VERY IMPORTANT
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                // ✅ PUBLIC AUTH ENDPOINTS
                 .requestMatchers("/api/auth/**").permitAll()
+
+                // 🔐 EVERYTHING ELSE
                 .anyRequest().authenticated()
             )
 
