@@ -6,6 +6,7 @@ import TaskManager.TaskManager.Security.JwtUtil;
 import TaskManager.TaskManager.entity.User;
 import TaskManager.TaskManager.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder; // ADD THIS IMPORT
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,10 +14,9 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserRepo userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder; // Now this will work
     private final JwtUtil jwtUtil;
 
-    // Method 1: Using DTO (Recommended)
     public UserResponseDto register(UserRequestDto requestDto) {
         // Check if email already exists
         if (userRepository.findByEmail(requestDto.getEmail()).isPresent()) {
@@ -43,7 +43,7 @@ public class AuthService {
                 .build();
     }
 
-    // Method 2: Keep original for backward compatibility
+    // Keep original for backward compatibility
     public User register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole("USER");
