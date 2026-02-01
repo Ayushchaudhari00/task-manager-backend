@@ -1,47 +1,49 @@
 package TaskManager.TaskManager.Service;
 
-import TaskManager.TaskManager.entity.Task;
+import TaskManager.TaskManager.Security.JwtUtil;
 import TaskManager.TaskManager.entity.User;
-import TaskManager.TaskManager.repository.TaskRepo;
 import TaskManager.TaskManager.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class TaskService {
+public class AuthService {
 
-    private final TaskRepo taskRepository;
     private final UserRepo userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
-    public List<Task> getTasksByUserEmail(String email) {
-        return taskRepository.findByUserEmail(email);
+    // ✅ REGISTER — now returns token + user info in one response
+    public Map<String, Object> register(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole("USER");
+        User savedUser = userRepository.save(user);
+
+        String token = jwtUtil.generateToken(savedUser.getEmail());
+
+        // Return everything the frontend needs in one shot
+        return Map.of(
+            "token", token,
+            "name", savedUser.getName(),
+            "email", savedUser.getEmail()
+        );
     }
 
-    public Task createTask(Task task, String email) {
+    // ✅ LOGIN — unchanged, still returns plain token string
+    public String login(String email, String password) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->
+                        new RuntimeException("Invalid credentials")
+                );
 
-        task.setUser(user);
-        return taskRepository.save(task);
-    }
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
 
-    public Task updateTask(Long id, Task updatedTask) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        task.setTitle(updatedTask.getTitle());
-        task.setDescription(updatedTask.getDescription());
-        task.setStatus(updatedTask.getStatus());
-        task.setPriority(updatedTask.getPriority());
-        task.setDueDate(updatedTask.getDueDate());
-
-        return taskRepository.save(task);
-    }
-
-    public void deleteTask(Long id) {
-        taskRepository.deleteById(id);
+        return jwtUtil.generateToken(user.getEmail());
     }
 }
