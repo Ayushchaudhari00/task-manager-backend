@@ -1,11 +1,9 @@
 package TaskManager.TaskManager.Controller;
 
-
 import TaskManager.TaskManager.Service.TaskService;
 import TaskManager.TaskManager.entity.Task;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,35 +15,41 @@ public class TaskController {
 
     private final TaskService taskService;
 
-    // ✅ GET all tasks for logged-in user
-    @GetMapping
-    public List<Task> getUserTasks(
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
-        return taskService.getTasksByUserEmail(userDetails.getUsername());
-    }
-
-    // ✅ CREATE task (THIS FIXES YOUR 403)
+    // ✅ CREATE TASK
     @PostMapping
     public Task createTask(
             @RequestBody Task task,
-            @AuthenticationPrincipal UserDetails userDetails
+            Authentication authentication
     ) {
-        return taskService.createTask(task, userDetails.getUsername());
+        String email = authentication.getName(); // extracted from JWT
+        return taskService.createTask(task, email);
     }
 
-    // ✅ UPDATE task
+    // ✅ GET ALL TASKS (LOGGED-IN USER ONLY)
+    @GetMapping
+    public List<Task> getMyTasks(Authentication authentication) {
+        String email = authentication.getName();
+        return taskService.getTasksByUser(email);
+    }
+
+    // ✅ UPDATE TASK
     @PutMapping("/{id}")
     public Task updateTask(
             @PathVariable Long id,
-            @RequestBody Task task
+            @RequestBody Task updatedTask,
+            Authentication authentication
     ) {
-        return taskService.updateTask(id, task);
+        String email = authentication.getName();
+        return taskService.updateTask(id, updatedTask, email);
     }
 
-    // ✅ DELETE task
+    // ✅ DELETE TASK
     @DeleteMapping("/{id}")
-    public void deleteTask(@PathVariable Long id) {
-        taskService.deleteTask(id);
+    public void deleteTask(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        taskService.deleteTask(id, email);
     }
 }
