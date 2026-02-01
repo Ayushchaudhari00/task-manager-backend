@@ -16,12 +16,10 @@ public class TaskService {
     private final TaskRepo taskRepository;
     private final UserRepo userRepository;
 
-    // GET /api/tasks
     public List<Task> getTasksByUserEmail(String email) {
         return taskRepository.findByUserEmail(email);
     }
 
-    // POST /api/tasks
     public Task createTask(Task task, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -30,7 +28,6 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    // PUT /api/tasks/{id}
     public Task updateTask(Long id, Task updatedTask) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
@@ -44,11 +41,7 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    // DELETE /api/tasks/{id}
     public void deleteTask(Long id) {
-        if (!taskRepository.existsById(id)) {
-            throw new RuntimeException("Task not found");
-        }
         taskRepository.deleteById(id);
     }
 }
