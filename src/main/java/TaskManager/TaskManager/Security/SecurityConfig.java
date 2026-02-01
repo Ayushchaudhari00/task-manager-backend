@@ -30,20 +30,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .cors(cors -> cors.disable())  // ← CHANGED THIS - Using CorsConfig.java instead
             .authorizeHttpRequests(auth -> auth
-                // IMPORTANT: Allow these endpoints WITHOUT authentication
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/auth/register").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
-                // Require authentication for all other requests
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
+        
         return http.build();
     }
     @Bean
