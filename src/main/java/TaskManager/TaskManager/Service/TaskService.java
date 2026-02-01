@@ -16,12 +16,12 @@ public class TaskService {
     private final TaskRepo taskRepository;
     private final UserRepo userRepository;
 
-    // ✅ GET all tasks for the logged-in user (by email from JWT)
+    // GET /api/tasks
     public List<Task> getTasksByUserEmail(String email) {
         return taskRepository.findByUserEmail(email);
     }
 
-    // ✅ CREATE a new task and assign it to the logged-in user
+    // POST /api/tasks
     public Task createTask(Task task, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -30,7 +30,7 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    // ✅ UPDATE an existing task by ID
+    // PUT /api/tasks/{id}
     public Task updateTask(Long id, Task updatedTask) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
@@ -44,7 +44,7 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    // ✅ DELETE a task by ID
+    // DELETE /api/tasks/{id}
     public void deleteTask(Long id) {
         if (!taskRepository.existsById(id)) {
             throw new RuntimeException("Task not found");
