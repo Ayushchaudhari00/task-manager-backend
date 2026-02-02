@@ -1,15 +1,18 @@
 package TaskManager.TaskManager.Service;
+
 import TaskManager.TaskManager.entity.Task;
 import TaskManager.TaskManager.entity.User;
 import TaskManager.TaskManager.repository.TaskRepo;
 import TaskManager.TaskManager.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class TaskService {
+
     private final TaskRepo taskRepository;
     private final UserRepo userRepository;
 
@@ -31,11 +34,13 @@ public class TaskService {
         if (!task.getUser().getEmail().equals(email)) {
             throw new RuntimeException("Unauthorized to update this task");
         }
+        
         task.setTitle(updatedTask.getTitle());
         task.setDescription(updatedTask.getDescription());
         task.setStatus(updatedTask.getStatus());
         task.setPriority(updatedTask.getPriority());
         task.setDueDate(updatedTask.getDueDate());
+        
         return taskRepository.save(task);
     }
 
