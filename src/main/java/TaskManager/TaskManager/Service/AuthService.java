@@ -18,19 +18,26 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    public Map<String, Object> register(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole("USER");
-        User savedUser = userRepository.save(user);
+  public Map<String, Object> register(User user) {
 
-        String token = jwtUtil.generateToken(savedUser.getEmail());
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("name", savedUser.getName());
-        response.put("email", savedUser.getEmail());
-        return response;
+    if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+        throw new RuntimeException("Email already registered");
     }
+    user.setPassword(passwordEncoder.encode(user.getPassword()));
+    user.setRole("USER");
+
+    User savedUser = userRepository.save(user);
+
+    String token = jwtUtil.generateToken(savedUser.getEmail());
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("token", token);
+    response.put("name", savedUser.getName());
+    response.put("email", savedUser.getEmail());
+
+    return response;
+}
+
 
     public String login(String email, String password) {
         User user = userRepository.findByEmail(email)
