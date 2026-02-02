@@ -14,24 +14,30 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class User {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(nullable = false)
     private String name;
-    
+
     @Column(nullable = false, unique = true)
     private String email;
-    
-    @JsonIgnore  
+
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
-    
+
+    @Column(nullable = false)
     private String role;
-    
-    @JsonIgnore  // ← ADD THIS to prevent infinite loop when serializing
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+
+    @JsonIgnore
+    @OneToMany(
+        mappedBy = "user",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    @Builder.Default
     private List<Task> tasks = new ArrayList<>();
 }
