@@ -18,11 +18,24 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-  public Map<String, Object> register(User user) {
+public Map<String, Object> register(User user) {
+
+    if (user.getName() == null || user.getName().isBlank()) {
+        throw new RuntimeException("Name is required");
+    }
+
+    if (user.getEmail() == null || user.getEmail().isBlank()) {
+        throw new RuntimeException("Email is required");
+    }
+
+    if (user.getPassword() == null || user.getPassword().isBlank()) {
+        throw new RuntimeException("Password is required");
+    }
 
     if (userRepository.findByEmail(user.getEmail()).isPresent()) {
         throw new RuntimeException("Email already registered");
     }
+
     user.setPassword(passwordEncoder.encode(user.getPassword()));
     user.setRole("USER");
 
@@ -30,13 +43,13 @@ public class AuthService {
 
     String token = jwtUtil.generateToken(savedUser.getEmail());
 
-    Map<String, Object> response = new HashMap<>();
-    response.put("token", token);
-    response.put("name", savedUser.getName());
-    response.put("email", savedUser.getEmail());
-
-    return response;
+    return Map.of(
+        "token", token,
+        "name", savedUser.getName(),
+        "email", savedUser.getEmail()
+    );
 }
+
 
 
     public String login(String email, String password) {
