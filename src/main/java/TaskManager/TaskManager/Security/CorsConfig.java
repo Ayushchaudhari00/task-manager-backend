@@ -12,10 +12,10 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         
-        config.setAllowedOrigins(Arrays.asList(
-            "http://localhost:5173",
-            "https://task-manager-frontend.onrender.com"
-        ));
+       config.setAllowedOrigins(Arrays.asList(
+    "http://localhost:5173",
+    "https://moonlit-swan-1def33.netlify.app"
+));
         
         config.setAllowedMethods(Arrays.asList(
             "GET", "POST", "PUT", "DELETE", "OPTIONS"
